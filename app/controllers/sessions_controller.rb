@@ -1,19 +1,13 @@
-class UsersController < ApplicationController
-  def index
-    @users = User.all
-  end
-
-  def show
-    @user = User.find(params[:id])
-  end
+class SessionsController < ApplicationController
+  before_action :require_current_user!, only: [:destroy]
 
   def new
     @user = User.new
   end
 
   def create
-    @user = User.new(user_params)
-    if @user.save
+    @user = User.find_by_credentials(params[:user][:username], params[:user][:password])
+    if @user
       login(@user)
       redirect_to user_url(@user)
     else
@@ -22,8 +16,12 @@ class UsersController < ApplicationController
     end
   end
 
-  private
+  def destroy
+    logout
+    redirect_to new_session_url
+  end
 
+  private
   def user_params
     params.require(:user).permit(:username, :password)
   end
